@@ -2,6 +2,13 @@
 <p dir="rtl">
 نقشه پارسی جو در اپلیکیشن های اندروید
 </p>
+<div style="width:45%; display: inline-block; margin: 25px 50px 75px 100px"><img src="http://imgurl.ir/uploads/v94827_Screenshot_from_2018-07-21_19-19-35.png"/>
+</div>
+
+<div style="width:10%; display: inline-block; margin: 25px 50px 75px 100px">
+</div>
+<div style="width:45%; display: inline-block; margin: 25px 50px 75px 100px"><img src="http://imgurl.ir/uploads/v618851_Screenshot_from_2018-07-21_19-22-31.png"/>
+</div>
 
 
 <p dir="rtl">
