@@ -51,6 +51,19 @@ viewer.setFirstLoadCallBack(this);//کالبکی برای متوجه شدن از
 viewer.setOnMapClickListener()//گرفتن کلیک های نقشه
 viewer.enableRotateGesture();//فعال کردن قابلیت چرخش زاویه نقشه
 viewer.animateToPosition(GeoPoint point);
+viewer.showCurrentLocation(true, true);//بلافاصله بعد از لود شدن کاربر مکان کاربر را با درج مارکر نمایش میدهد با true کردن هر دو پارامتر همراه با تغییر مکان کاربر مارکر هم اپدیت میشود 
+boolean locationPermission = viewer.showMyLocationButton(true);//نمایش دکمه مکان فعلی من که کاربر با کلیک آن به محل کنونی خود می رود مقدار بازگشتی اگر دسترسی های لوکشین گرفته نشده باشد false است . 
+        if (!locationPermission) {
+            //کاربر دسترسی لوکیشن را نداده پس دکمه هم نمایش داده نمی شود
+            Toast.makeText(this, "لطفا دسترسی لوکیشن را تایید نمایید", Toast.LENGTH_SHORT).show();
+        }
+</pre></div>
+        <p dir="rtl">
+       گرفتن لوکیشن چهارنقطه + مرکز صفحه  نمایش :
+</p>
+<div class="highlight highlight-text-xml">
+<pre><span class="pl-ent">
+CoordinateDetail currentVisible = viewer.getVisibleCorners();
 </pre></div>
 <p dir="rtl">
        رسم PolyLine , Polygon , Marker :
