@@ -1,13 +1,18 @@
 package ir.parsijoo.map.android;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.graphics.ColorUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -19,19 +24,20 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.events.DelayedMapListener;
-import org.osmdroid.events.MapAdapter;
 import org.osmdroid.events.MapEventsReceiver;
-import org.osmdroid.events.MapListener;
-import org.osmdroid.events.ScrollEvent;
-import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.MapTileProviderBasic;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
@@ -56,16 +62,18 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import ir.parsijoo.map.android.Builder.MarkerBuilder;
 import ir.parsijoo.map.android.CallBacks.LocationDetailCallBack;
 import ir.parsijoo.map.android.CallBacks.OnMapClickListener;
 import ir.parsijoo.map.android.CallBacks.RoutingCallBack;
 import ir.parsijoo.map.android.CallBacks.SearchResultCallBack;
 import ir.parsijoo.map.android.Controls.ZoomLevel;
+import ir.parsijoo.map.android.Models.CoordinateDetail;
 import ir.parsijoo.map.android.Models.LocationDetail;
+import ir.parsijoo.map.android.Models.MyLocationHolder;
 import ir.parsijoo.map.android.Models.Place;
 import ir.parsijoo.map.android.Models.RoutingDetail;
 import ir.parsijoo.map.android.Util.ShapeUtil;
@@ -90,8 +98,12 @@ public class Viewer extends RelativeLayout {
     private RotationGestureOverlay mRotationGestureOverlay;
     private FolderOverlay shapesOverLay;
     private FolderOverlay markerOverLay;
+    private FolderOverlay myLocationOverLay;
     private HashMap<String, Overlay> allOverLays;
     public ItemizedIconOverlay<OverlayItem> itemizedIconOverlay;
+    private MyLocationHolder myLocationHolder;
+    private ImageView myLocationIv;
+    private LocationCallback locationCallback = null;
 
     public Viewer(Context context) {
         super(context);
@@ -116,6 +128,16 @@ public class Viewer extends RelativeLayout {
         allOverLays = new HashMap<>();
 
         View view = inflate(context, R.layout.viewer, this);
+        myLocationIv = view.findViewById(R.id.myLocation);
+        myLocationIv.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (myLocationHolder != null && myLocationHolder.getLastPosition() != null) {
+                    animateToPosition(myLocationHolder.getLastPosition());
+                    drawMyLocationOverLay();
+                }
+            }
+        });
         mapView = view.findViewById(R.id.mapviewosm);
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomViewer, defStyleAttr, 0);
         this.api_key = a.getString(R.styleable.CustomViewer_api_key);
@@ -129,8 +151,29 @@ public class Viewer extends RelativeLayout {
         mapView.setMinZoomLevel(3.0);
         setConfigMultiTouch(true);
         parsijooTileProvider();
+        myLocationHolder = new MyLocationHolder(ContextCompat.getDrawable(context, R.drawable.myloc_marker));
+        myLocationOverLay = new FolderOverlay();
+        mapView.getOverlays().add(myLocationOverLay);
+
         a.recycle();
 
+    }
+
+    private void drawMyLocationOverLay() {
+
+        List<Overlay> overlays = myLocationOverLay.getItems();
+
+        for (int i = overlays.size() - 1; i >= 0; i--)
+            myLocationOverLay.remove(overlays.get(i));
+
+        Marker marker = MarkerBuilder.Create(getSelf(), myLocationHolder.getLastPosition());
+        marker.setIcon(myLocationHolder.getIcon());
+        Polygon circle = ShapeUtil.createCirlce(myLocationHolder.getLastPosition(), myLocationHolder.getAccuracy());
+        circle.setStrokeColor(R.color.myLocationBorder);
+        circle.setFillColor(ColorUtils.setAlphaComponent(ResourcesCompat.getColor(getResources(), R.color.myLocationBorder, null), 40));
+        myLocationOverLay.add(circle);
+        myLocationOverLay.add(marker);
+        mapView.invalidate();
     }
 
     public MapView getMapView() {
@@ -262,6 +305,23 @@ public class Viewer extends RelativeLayout {
 
     }
 
+    public void addMarker(@NonNull GeoPoint point, String tag) {
+        addMarker(point.getLatitude(), point.getLongitude(), tag);
+
+    }
+
+    public void addMarker(@NonNull GeoPoint point) {
+        addMarker(point, null);
+
+    }
+
+    public void addMarker(@NonNull List<GeoPoint> points) {
+
+        for (GeoPoint point : points)
+            addMarker(point.getLatitude(), point.getLongitude());
+
+    }
+
     public void addMarker(@NonNull Marker marker, String tag) {
 
         if (markerOverLay == null) {
@@ -277,6 +337,10 @@ public class Viewer extends RelativeLayout {
     }
 
     public Marker addMarker(double y, double x) {
+        return addMarker(y, x, null);
+    }
+
+    public Marker addMarker(double y, double x, String tag) {
         Marker marker = new Marker(mapView);
         marker.setPosition(new GeoPoint(y, x));
         marker.setAnchor(Marker.ANCHOR_CENTER, 1.0f);
@@ -288,6 +352,9 @@ public class Viewer extends RelativeLayout {
         markerOverLay.add(marker);
         if (mapView != null)
             mapView.invalidate();
+
+        if (tag != null)
+            allOverLays.put(tag, marker);
         return marker;
     }
 
@@ -397,6 +464,83 @@ public class Viewer extends RelativeLayout {
         setZoom(zoomLevel);
     }
 
+
+    public boolean showMyLocationButton(boolean isShow, final LocationCallback callback) {
+
+
+        if (isShow) {
+            if (ActivityCompat.checkSelfPermission(mapView.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mapView.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+            myLocationIv.setVisibility(VISIBLE);
+            locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    myLocationHolder.setLastPosition(new GeoPoint(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude()));
+                    myLocationHolder.setAccuracy(locationResult.getLastLocation().getAccuracy());
+                    if (myLocationHolder.getTrackCount() == -1) {
+                        drawMyLocationOverLay();
+                        animateToPosition(new GeoPoint(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude()));
+                    } else if (myLocationHolder.getTrackCount() > 0) {
+                        myLocationHolder.setTrackCount(myLocationHolder.getTrackCount() - 1);
+                        drawMyLocationOverLay();
+                        animateToPosition(new GeoPoint(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude()));
+
+                    }
+                    if (callback != null) {
+                        callback.onLocationResult(locationResult);
+                    }
+                }
+
+                @Override
+                public void onLocationAvailability(LocationAvailability locationAvailability) {
+                    super.onLocationAvailability(locationAvailability);
+                    if (callback != null) {
+                        callback.onLocationAvailability(locationAvailability);
+                    }
+                }
+            };
+            final LocationRequest locationRequest = new LocationRequest();
+            locationRequest.setFastestInterval(1000)
+                    .setInterval(3000)
+                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                    .setSmallestDisplacement(1);
+
+
+            LocationServices.getFusedLocationProviderClient(mapView.getContext())
+                    .requestLocationUpdates(locationRequest, locationCallback, null);
+
+            return true;
+        } else {
+
+            myLocationIv.setVisibility(GONE);
+            removeLocationUpdateCallBack();
+            return true;
+        }
+
+
+    }
+
+    public boolean showMyLocationButton(boolean isShow) {
+        return showMyLocationButton(isShow, null);
+
+    }
+
+    public void showCurrentLocation(boolean animate, boolean mustUpdate) {
+
+        myLocationHolder.setTrackCount(mustUpdate ? -1 : 1);
+        myLocationHolder.setMustAnimate(animate);
+        showMyLocationButton(true);
+    }
+
+    public void removeLocationUpdateCallBack() {
+        if (locationCallback != null) {
+            LocationServices.getFusedLocationProviderClient(mapView.getContext()).removeLocationUpdates(locationCallback);
+            locationCallback = null;
+        }
+
+    }
+
     public void enableRotateGesture() {
 
         mRotationGestureOverlay = new RotationGestureOverlay(mapView);
@@ -417,7 +561,7 @@ public class Viewer extends RelativeLayout {
         mapView.setMapOrientation(degree);
     }
 
-    public Overlay findItemByTag(String tag){
+    public Overlay findItemByTag(String tag) {
         return allOverLays.get(tag);
     }
 
@@ -914,6 +1058,23 @@ public class Viewer extends RelativeLayout {
             }
         };
         queue.add(stringRequest);
+    }
+
+    public CoordinateDetail getVisibleCorners() {
+
+        int height = getSelf().getHeight();
+        int width = getSelf().getWidth();
+        IGeoPoint topLeft = getSelf().getMapView().getProjection().fromPixels(0, 0);
+        IGeoPoint topRight = getSelf().getMapView().getProjection().fromPixels(width, 0);
+        IGeoPoint bottomRight = getSelf().getMapView().getProjection().fromPixels(width, height);
+        IGeoPoint bottomLeft = getSelf().getMapView().getProjection().fromPixels(0, height);
+
+        return new CoordinateDetail()
+                .setTopRight(topRight)
+                .setTopLeft(topLeft)
+                .setBottomLeft(bottomLeft)
+                .setBottomRight(bottomRight)
+                .setCenter(mapView.getProjection().getCurrentCenter());
     }
 
     public static interface CallBackDirection {

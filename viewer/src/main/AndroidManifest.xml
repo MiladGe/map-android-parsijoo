@@ -1,2 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ir.parsijoo.map.viewer" />
+    package="ir.parsijoo.map.viewer" >
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+</manifest>

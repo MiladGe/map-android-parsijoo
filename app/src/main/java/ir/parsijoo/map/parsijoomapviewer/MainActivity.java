@@ -28,6 +28,7 @@ import ir.parsijoo.map.android.CallBacks.OnMapClickListener;
 import ir.parsijoo.map.android.CallBacks.RoutingCallBack;
 import ir.parsijoo.map.android.CallBacks.SearchResultCallBack;
 import ir.parsijoo.map.android.Controls.ZoomLevel;
+import ir.parsijoo.map.android.Models.CoordinateDetail;
 import ir.parsijoo.map.android.Models.LocationDetail;
 import ir.parsijoo.map.android.Models.Place;
 import ir.parsijoo.map.android.Models.RoutingDetail;
@@ -52,8 +53,14 @@ public class MainActivity extends RuntimePermissionsActivity implements MapView.
         viewer = findViewById(R.id.mapview);
 
         viewer.setStartPosition(new GeoPoint(31.89739, 54.35119), ZoomLevel.City_1);
-//        viewer.enableRotateGesture();
+        viewer.enableRotateGesture();
         viewer.setFirstLoadCallBack(this);
+        viewer.showCurrentLocation(true, true);
+        boolean locationPermission = viewer.showMyLocationButton(true);
+        if (!locationPermission) {
+            //کاربر دسترسی لوکیشن را نداده پس دکمه هم نمایش داده نمی شود
+            Toast.makeText(this, "لطفا دسترسی لوکشین را تایید نمایید", Toast.LENGTH_SHORT).show();
+        }
         viewer.setOnMapClickListener(new OnMapClickListener() {
 
             @Override
@@ -94,7 +101,7 @@ public class MainActivity extends RuntimePermissionsActivity implements MapView.
 
     private void getPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-           MainActivity.super.requestAppPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_REQUEST_CODE);
+            MainActivity.super.requestAppPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_REQUEST_CODE);
         }
     }
 
@@ -272,8 +279,18 @@ public class MainActivity extends RuntimePermissionsActivity implements MapView.
         drawPolygon();
         zoomToBound();
         drawCircle();
+
+        CoordinateDetail currentVisible = viewer.getVisibleCorners();
+
+
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        viewer.removeLocationUpdateCallBack();
+    }
 
     @Override
     public void onPermissionsGranted(int requestCode) {

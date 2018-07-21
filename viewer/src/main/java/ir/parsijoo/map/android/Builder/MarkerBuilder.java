@@ -3,6 +3,7 @@ package ir.parsijoo.map.android.Builder;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
@@ -28,6 +29,13 @@ public class MarkerBuilder extends Marker {
 
         Marker marker = new Marker(viewer.getMapView());
         marker.setPosition(p);
+        return marker;
+    }
+
+    public static Marker Create(Viewer viewer, IGeoPoint p) {
+
+        Marker marker = new Marker(viewer.getMapView());
+        marker.setPosition(new GeoPoint(p.getLatitude(), p.getLongitude()));
         return marker;
     }
 }
