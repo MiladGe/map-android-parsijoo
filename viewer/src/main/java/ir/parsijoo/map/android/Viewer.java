@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -14,7 +15,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -125,6 +125,7 @@ public class Viewer extends RelativeLayout {
 
     private void initializer(Context context, AttributeSet attrs, int defStyleAttr) {
 
+        Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         allOverLays = new HashMap<>();
 
         View view = inflate(context, R.layout.viewer, this);
@@ -230,7 +231,6 @@ public class Viewer extends RelativeLayout {
         }
 
         List<Overlay> overlays = mapView.getOverlays();
-        Toast.makeText(mapView.getContext(), "" + overlays.size(), Toast.LENGTH_SHORT).show();
         getMapView().getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
             @Override
             public boolean singleTapConfirmedHelper(GeoPoint p) {

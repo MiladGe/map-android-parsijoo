@@ -4,6 +4,7 @@ import android.Manifest;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.ColorUtils;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
 
+import org.osmdroid.config.Configuration;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -48,6 +50,7 @@ public class MainActivity extends RuntimePermissionsActivity implements MapView.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         setListeners();
         viewer = findViewById(R.id.mapview);
@@ -300,8 +303,8 @@ public class MainActivity extends RuntimePermissionsActivity implements MapView.
     @Override
     public void onPermissionsDeny(int requestCode) {
 
-        Toast.makeText(this, "برای کارکرد برنامه لطفا دسترسی ها را تایید نمایید", Toast.LENGTH_SHORT).show();
-        getPermission();
+        Toast.makeText(this, "برای کارکرد برنامه لطفا دسترسی کارت حافظه را تایید نمایید", Toast.LENGTH_SHORT).show();
+//        getPermission();
     }
 
 }
