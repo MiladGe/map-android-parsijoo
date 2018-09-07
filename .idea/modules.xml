@@ -4,10 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ParsijooMapViewer.iml" filepath="$PROJECT_DIR$/ParsijooMapViewer.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/map-android-parsijoo.iml" filepath="$PROJECT_DIR$/map-android-parsijoo.iml" />
-      <module fileurl="file://$PROJECT_DIR$/map-android-parsijoo.iml" filepath="$PROJECT_DIR$/map-android-parsijoo.iml" />
-      <module fileurl="file://$PROJECT_DIR$/viewer/viewer.iml" filepath="$PROJECT_DIR$/viewer/viewer.iml" />
       <module fileurl="file://$PROJECT_DIR$/viewer/viewer.iml" filepath="$PROJECT_DIR$/viewer/viewer.iml" />
     </modules>
   </component>
