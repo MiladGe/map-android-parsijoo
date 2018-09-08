@@ -140,7 +140,7 @@ public class Viewer extends RelativeLayout {
                 if (myLocationHolder != null && myLocationHolder.getLastPosition() != null) {
                     animateToPosition(myLocationHolder.getLastPosition());
 
-                    if (mapView.getZoomLevel() < ZoomLevel.Country_4.get())
+                    if (mapView.getZoomLevelDouble() < ZoomLevel.Province_5.get())
                         setZoom(ZoomLevel.City_3);
                     drawMyLocationOverLay();
                 }
