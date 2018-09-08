@@ -58,12 +58,12 @@ public class MainActivity extends RuntimePermissionsActivity implements MapView.
         viewer.setStartPosition(new GeoPoint(31.89739, 54.35119), ZoomLevel.City_1);
 //        viewer.enableRotateGesture();
         viewer.setFirstLoadCallBack(this);
-        viewer.showCurrentLocation(true, true);
-        boolean locationPermission = viewer.showMyLocationButton(true);
-        if (!locationPermission) {
-            //کاربر دسترسی لوکیشن را نداده پس دکمه هم نمایش داده نمی شود
-            Toast.makeText(this, "لطفا دسترسی لوکیشن را تایید نمایید", Toast.LENGTH_SHORT).show();
-        }
+//        viewer.showCurrentLocation(true, true);
+//        boolean locationPermission = viewer.showMyLocationButton(true);
+//        if (!locationPermission) {
+//            //کاربر دسترسی لوکیشن را نداده پس دکمه هم نمایش داده نمی شود
+//            Toast.makeText(this, "لطفا دسترسی لوکیشن را تایید نمایید", Toast.LENGTH_SHORT).show();
+//        }
         viewer.setOnMapClickListener(new OnMapClickListener() {
 
             @Override

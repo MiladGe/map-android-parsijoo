@@ -14,6 +14,7 @@ import android.support.v4.graphics.ColorUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.android.volley.AuthFailureError;
@@ -104,6 +105,8 @@ public class Viewer extends RelativeLayout {
     private MyLocationHolder myLocationHolder;
     private ImageView myLocationIv;
     private LocationCallback locationCallback = null;
+    private static boolean mustShowMyLocationBt = false;
+    private LinearLayout myLocationBtParent;
 
     public Viewer(Context context) {
         super(context);
@@ -130,11 +133,15 @@ public class Viewer extends RelativeLayout {
 
         View view = inflate(context, R.layout.viewer, this);
         myLocationIv = view.findViewById(R.id.myLocation);
+        myLocationBtParent = view.findViewById(R.id.mylocationBtParent);
         myLocationIv.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (myLocationHolder != null && myLocationHolder.getLastPosition() != null) {
                     animateToPosition(myLocationHolder.getLastPosition());
+
+                    if (mapView.getZoomLevel() < ZoomLevel.Country_4.get())
+                        setZoom(ZoomLevel.City_3);
                     drawMyLocationOverLay();
                 }
             }
@@ -469,10 +476,13 @@ public class Viewer extends RelativeLayout {
 
 
         if (isShow) {
+
+            mustShowMyLocationBt = true;
             if (ActivityCompat.checkSelfPermission(mapView.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mapView.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
             myLocationIv.setVisibility(VISIBLE);
+            myLocationBtParent.setVisibility(VISIBLE);
             locationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
@@ -480,11 +490,11 @@ public class Viewer extends RelativeLayout {
                     myLocationHolder.setAccuracy(locationResult.getLastLocation().getAccuracy());
                     if (myLocationHolder.getTrackCount() == -1) {
                         drawMyLocationOverLay();
-                        animateToPosition(new GeoPoint(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude()));
+                        animateToPosition(new GeoPoint(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude()));
                     } else if (myLocationHolder.getTrackCount() > 0) {
                         myLocationHolder.setTrackCount(myLocationHolder.getTrackCount() - 1);
                         drawMyLocationOverLay();
-                        animateToPosition(new GeoPoint(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude()));
+                        animateToPosition(new GeoPoint(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude()));
 
                     }
                     if (callback != null) {
@@ -513,6 +523,8 @@ public class Viewer extends RelativeLayout {
             return true;
         } else {
 
+            myLocationBtParent.setVisibility(GONE);
+            mustShowMyLocationBt = false;
             myLocationIv.setVisibility(GONE);
             removeLocationUpdateCallBack();
             return true;
