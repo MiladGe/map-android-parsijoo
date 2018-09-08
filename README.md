@@ -9,8 +9,17 @@
 </div>
 <div style="width:45%; display: inline-block; margin: 25px 50px 75px 100px"><img src="http://imgurl.ir/uploads/v618851_Screenshot_from_2018-07-21_19-22-31.png"/>
 </div>
-
-
+</br>
+<p dir="rtl">
+        به منظور استفاده از ابزار نقشه پارسی جو در اپلیکیشن های اندروید قطعه کد زیر را در فایل gradle اپلیکیشن خود قرار دهید:
+</p>
+<div class="highlight highlight-text-xml">
+<pre>repositories { 
+        maven {url 'https://jitpack.io' } 
+}
+dependencies {
+                implementation 'com.github.MiladGe:map-android-parsijoo:v1.4'
+}</pre></div>
 <p dir="rtl">
         کد زیر را در قسمت لایوت مربوط به اکتیویتی خود اضافه کنید:
 </p>
