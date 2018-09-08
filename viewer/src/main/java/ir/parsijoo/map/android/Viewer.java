@@ -152,7 +152,7 @@ public class Viewer extends RelativeLayout {
         mapView.setMinZoomLevel(3.0);
         setConfigMultiTouch(true);
         parsijooTileProvider();
-        myLocationHolder = new MyLocationHolder(ContextCompat.getDrawable(context, R.drawable.myloc_marker));
+        myLocationHolder = new MyLocationHolder(ContextCompat.getDrawable(context, R.drawable.my_location));
         myLocationOverLay = new FolderOverlay();
         mapView.getOverlays().add(myLocationOverLay);
 
@@ -171,7 +171,8 @@ public class Viewer extends RelativeLayout {
         marker.setIcon(myLocationHolder.getIcon());
         Polygon circle = ShapeUtil.createCirlce(myLocationHolder.getLastPosition(), myLocationHolder.getAccuracy());
         circle.setStrokeColor(R.color.myLocationBorder);
-        circle.setFillColor(ColorUtils.setAlphaComponent(ResourcesCompat.getColor(getResources(), R.color.myLocationBorder, null), 40));
+        circle.setStrokeWidth(2);
+        circle.setFillColor(ColorUtils.setAlphaComponent(ResourcesCompat.getColor(getResources(), R.color.myLocationBorder, null), 60));
         myLocationOverLay.add(circle);
         myLocationOverLay.add(marker);
         mapView.invalidate();
@@ -230,7 +231,6 @@ public class Viewer extends RelativeLayout {
             mapView.getOverlayManager().add(shapesOverLay);
         }
 
-        List<Overlay> overlays = mapView.getOverlays();
         getMapView().getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
             @Override
             public boolean singleTapConfirmedHelper(GeoPoint p) {
